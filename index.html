@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mundo Real" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Mundo Real // Macro Terminal</title>
+  <style>
+    :root{
+      --bg:#080b0f; --panel:#0d1218; --panel2:#111821; --border:#27313d;
+      --text:#eaf0f7; --muted:#8f9baa; --amber:#ffad14; --green:#4cd27b;
+      --red:#ff5d63; --blue:#4aa8ff; --cyan:#45d8e7; --purple:#a985ff;
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg);color-scheme:dark}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,select{font:inherit}
+    .app{min-height:100dvh;max-width:1400px;margin:0 auto;padding-bottom:82px}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(8,11,15,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 12px 9px}
+    .brandline{display:flex;align-items:center;gap:10px;min-width:0}
+    .brandmark{width:34px;height:34px;border:1px solid var(--amber);display:grid;place-items:center;color:var(--amber);font-weight:800;letter-spacing:-1px;flex:none}
+    .brandtext{min-width:0;flex:1}
+    .brand{font-size:15px;font-weight:800;letter-spacing:.11em;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .livechip{font-size:10px;border:1px solid #2f6b46;color:var(--green);padding:5px 7px;border-radius:2px;white-space:nowrap}
+    .ticker-wrap{border-bottom:1px solid var(--border);background:#06090d;min-height:46px}
+    .notice{display:flex;gap:8px;align-items:flex-start;margin:10px 12px 0;padding:9px 10px;border:1px solid #3a331d;background:#141108;color:#d8c98d;font-size:11px;line-height:1.4}
+    .notice b{color:var(--amber)}
+    .section{padding:12px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 8px}
+    .section-title h2{font-size:12px;margin:0;letter-spacing:.12em;color:var(--amber);font-weight:800}
+    .section-title span{font-size:10px;color:var(--muted)}
+    .terminal-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+    .panel{border:1px solid var(--border);background:var(--panel);min-width:0}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-bottom:1px solid var(--border);background:var(--panel2)}
+    .panel-title{font-size:11px;font-weight:800;letter-spacing:.09em;color:#c9d3df;text-transform:uppercase}
+    .panel-meta{font-size:10px;color:var(--muted)}
+    .market-overview{height:510px}
+    .main-chart{height:510px}
+    .quickbar{display:flex;overflow-x:auto;gap:6px;padding:8px;border-bottom:1px solid var(--border);scrollbar-width:none}
+    .quickbar::-webkit-scrollbar{display:none}
+    .qbtn{border:1px solid var(--border);background:#0a0f15;color:#b8c3cf;padding:7px 9px;border-radius:2px;font-size:11px;white-space:nowrap;cursor:pointer}
+    .qbtn.active{border-color:var(--amber);color:#111;background:var(--amber);font-weight:800}
+    .relationship-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .rel-card{border:1px solid var(--border);background:var(--panel);overflow:hidden}
+    .rel-card .body{height:330px}
+    .legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px;border-top:1px solid var(--border);background:#0a0f15}
+    .legend span{font-size:10px;color:var(--muted)}
+    .legend b{color:#d6dce5;font-weight:700}
+    .calendar{height:600px}
+    .help{font-size:13px;line-height:1.55;color:#c8d1dc;padding:13px}
+    .help h3{font-size:12px;color:var(--amber);letter-spacing:.08em;margin:15px 0 6px}
+    .help p{margin:0 0 8px}
+    .help code{color:#f2c05a;background:#171208;padding:1px 4px}
+    .bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(8,11,15,.97);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom)}
+    .navbtn{border:0;background:transparent;color:var(--muted);padding:11px 4px 9px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+    .navbtn.active{color:var(--amber);background:#100d06}
+    .view{display:none}.view.active{display:block}
+    .tvbox{width:100%;height:100%}
+    .offline{display:none;margin:8px 12px;padding:8px 10px;border:1px solid #6e2931;color:#ffb9bd;background:#180a0d;font-size:11px}
+    body.offline .offline{display:block}
+    @media (min-width:900px){
+      .terminal-grid{grid-template-columns:420px minmax(0,1fr)}
+      .market-overview,.main-chart{height:680px}
+      .relationship-grid{grid-template-columns:1fr 1fr}
+      .rel-card .body{height:390px}
+      .calendar{height:760px}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brandline">
+      <div class="brandmark">MR</div>
+      <div class="brandtext">
+        <div class="brand">MUNDO REAL // MACRO TERMINAL</div>
+        <div class="sub" id="clock">Cargando hora…</div>
+      </div>
+      <div class="livechip">FREE DATA</div>
+    </div>
+  </header>
+
+  <div class="ticker-wrap"><div id="ticker"></div></div>
+  <div class="offline">Sin conexión. La interfaz sigue disponible, pero los gráficos de mercado requieren internet.</div>
+  <div class="notice"><b>DATA:</b><span>TradingView Widgets. La frecuencia depende del instrumento: algunos símbolos TVC son gratuitos en tiempo real; FRED es diario y varios mercados de futuros/bolsas pueden ir retrasados.</span></div>
+
+  <main>
+    <section id="view-terminal" class="view active">
+      <div class="section">
+        <div class="section-title"><h2>01 // TERMINAL</h2><span>18 indicadores · un panel</span></div>
+        <div class="terminal-grid">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Watchlist macro</div><div class="panel-meta">toca una fila</div></div>
+            <div class="market-overview"><div id="marketOverview" class="tvbox"></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title" id="chartTitle">EE.UU. 10A</div><div class="panel-meta">gráfico avanzado</div></div>
+            <div class="quickbar" id="quickbar"></div>
+            <div class="main-chart"><div id="mainChart" class="tvbox"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-relaciones" class="view">
+      <div class="section">
+        <div class="section-title"><h2>02 // RELACIONES</h2><span>paneles para leer el régimen macro</span></div>
+        <div class="relationship-grid">
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Tipos USA</div><div class="panel-meta">2Y · 10Y · curva</div></div>
+            <div class="body"><div id="ratesChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>US02Y</b> Fed / corto plazo</span><span><b>US10Y</b> coste largo plazo</span><span><b>T10Y2Y</b> pendiente curva</span><span><b>T10YIE</b> inflación esperada</span></div>
+          </div>
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Dólar & Europa</div><div class="panel-meta">FX · BCE</div></div>
+            <div class="body"><div id="fxChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>DXY</b> dólar global</span><span><b>EUR/USD</b> Fed vs BCE</span><span><b>DE02Y</b> expectativas BCE</span><span><b>SX5E</b> bolsa eurozona</span></div>
+          </div>
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Energía & ciclo</div><div class="panel-meta">inflación · demanda</div></div>
+            <div class="body"><div id="energyChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>Brent</b> energía global</span><span><b>TTF</b> shock europeo</span><span><b>Cobre</b> ciclo industrial</span><span><b>DXY</b> presión divisa</span></div>
+          </div>
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Metales & refugio</div><div class="panel-meta">oro · plata · tipos</div></div>
+            <div class="body"><div id="metalsChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>Oro</b> refugio / tipos reales</span><span><b>Plata</b> monetario + industrial</span><span><b>US10Y</b> descuento</span><span><b>DXY</b> viento monetario</span></div>
+          </div>
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Riesgo & liquidez</div><div class="panel-meta">miedo · beta</div></div>
+            <div class="body"><div id="riskChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>VIX</b> protección bursátil</span><span><b>BTC</b> apetito especulativo</span><span><b>SPX</b> beta general</span><span><b>Nasdaq</b> duración / growth</span></div>
+          </div>
+          <div class="rel-card">
+            <div class="panel-head"><div class="panel-title">Bolsas</div><div class="panel-meta">USA · Europa · España</div></div>
+            <div class="body"><div id="equitiesChart" class="tvbox"></div></div>
+            <div class="legend"><span><b>SPX</b> EE.UU.</span><span><b>IXIC</b> Nasdaq Composite</span><span><b>SX5E</b> Euro Stoxx 50</span><span><b>IBC</b> IBEX 35</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-calendario" class="view">
+      <div class="section">
+        <div class="section-title"><h2>03 // CALENDARIO</h2><span>eventos macro que pueden mover el panel</span></div>
+        <div class="panel calendar"><div id="calendarWidget" class="tvbox"></div></div>
+      </div>
+    </section>
+
+    <section id="view-ayuda" class="view">
+      <div class="section">
+        <div class="section-title"><h2>04 // GUÍA</h2><span>cómo usarla</span></div>
+        <div class="panel help">
+          <h3>LECTURA DE ARRIBA ABAJO</h3>
+          <p><b>Tipos:</b> US02Y → US10Y → 10Y-2Y → breakeven → DE02Y. Primero mira qué descuenta la política monetaria; después el largo plazo y la inflación esperada.</p>
+          <p><b>Divisas:</b> DXY + EUR/USD. Te dicen hacia dónde se mueve el dólar y si existe divergencia Fed/BCE.</p>
+          <p><b>Economía real:</b> Brent + TTF + cobre. Úsalos para separar energía, shock europeo y pulso industrial.</p>
+          <p><b>Refugio:</b> oro + plata. Contrástalos siempre con DXY y tipos.</p>
+          <p><b>Riesgo:</b> VIX + BTC + bolsas. No significan lo mismo: VIX mide demanda de protección; BTC es un termómetro más imperfecto de apetito especulativo.</p>
+          <h3>COMPARAR SERIES</h3>
+          <p>En el gráfico avanzado usa el botón <code>+</code> / “Compare or Add Symbol” de TradingView para superponer cualquier otra variable. Para comparar activos de escalas muy distintas, cambia la escala a <code>Percentage</code>.</p>
+          <h3>FRECUENCIA DEL DATO</h3>
+          <p>La app no oculta el problema de latencia: los indicadores macro FRED son diarios; algunos futuros e índices pueden estar retrasados; los símbolos TVC de TradingView pueden ser gratuitos en tiempo real. No interpretes un dato diario como si fuera intradía.</p>
+          <h3>INSTALAR EN ANDROID</h3>
+          <p>Una vez publicada por HTTPS, abre la web en Chrome → menú ⋮ → <b>Añadir a pantalla de inicio</b> / <b>Instalar aplicación</b>. Se abrirá como una app independiente.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="bottomnav">
+  <button class="navbtn active" data-view="terminal">Terminal</button>
+  <button class="navbtn" data-view="relaciones">Relaciones</button>
+  <button class="navbtn" data-view="calendario">Calendario</button>
+  <button class="navbtn" data-view="ayuda">Guía</button>
+</nav>
+
+<script>
+const instruments = [
+  {name:'EE.UU. 2A', symbol:'TVC:US02Y', group:'TIPOS'},
+  {name:'EE.UU. 10A', symbol:'TVC:US10Y', group:'TIPOS'},
+  {name:'10-2 Yield Spread', symbol:'FRED:T10Y2Y', group:'TIPOS'},
+  {name:'US 10Y Breakeven', symbol:'FRED:T10YIE', group:'TIPOS'},
+  {name:'Alemán 2A', symbol:'TVC:DE02Y', group:'TIPOS'},
+  {name:'Índice dólar', symbol:'TVC:DXY', group:'DIVISAS'},
+  {name:'EUR/USD', symbol:'OANDA:EURUSD', group:'DIVISAS'},
+  {name:'Petróleo Brent', symbol:'TVC:UKOIL', group:'ENERGÍA'},
+  {name:'Dutch TTF Gas', symbol:'ICEEUR:TFN1!', group:'ENERGÍA'},
+  {name:'Cobre', symbol:'COMEX:HG1!', group:'MATERIAS PRIMAS'},
+  {name:'Oro', symbol:'COMEX:GC1!', group:'MATERIAS PRIMAS'},
+  {name:'Plata', symbol:'COMEX:SI1!', group:'MATERIAS PRIMAS'},
+  {name:'S&P 500 VIX', symbol:'CBOE:VIX', group:'RIESGO'},
+  {name:'BTC/USD', symbol:'COINBASE:BTCUSD', group:'RIESGO'},
+  {name:'S&P 500', symbol:'SP:SPX', group:'BOLSAS'},
+  {name:'Nasdaq', symbol:'NASDAQ:IXIC', group:'BOLSAS'},
+  {name:'Euro Stoxx 50', symbol:'TVC:SX5E', group:'BOLSAS'},
+  {name:'IBEX 35', symbol:'BME:IBC', group:'BOLSAS'}
+];
+
+function tvScript(container, src, config){
+  container.innerHTML='';
+  const wrap=document.createElement('div'); wrap.className='tradingview-widget-container'; wrap.style.height='100%'; wrap.style.width='100%';
+  const widget=document.createElement('div'); widget.className='tradingview-widget-container__widget'; widget.style.height='100%'; widget.style.width='100%';
+  const script=document.createElement('script'); script.type='text/javascript'; script.async=true; script.src=src; script.textContent=JSON.stringify(config);
+  wrap.appendChild(widget); wrap.appendChild(script); container.appendChild(wrap);
+}
+
+function loadTicker(){
+  tvScript(document.getElementById('ticker'),'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',{
+    symbols:[
+      {proName:'TVC:US10Y',title:'US10Y'}, {proName:'TVC:DXY',title:'DXY'}, {proName:'COMEX:GC1!',title:'ORO'},
+      {proName:'COMEX:SI1!',title:'PLATA'}, {proName:'COINBASE:BTCUSD',title:'BTC'}, {proName:'SP:SPX',title:'S&P 500'},
+      {proName:'TVC:SX5E',title:'EURO STOXX'}, {proName:'BME:IBC',title:'IBEX'}
+    ], showSymbolLogo:false, isTransparent:true, displayMode:'adaptive', colorTheme:'dark', locale:'es'
+  });
+}
+
+function loadOverview(){
+  const tabs=[
+    {title:'TIPOS',symbols:instruments.filter(x=>x.group==='TIPOS').map(x=>({s:x.symbol,d:x.name}))},
+    {title:'FX',symbols:instruments.filter(x=>x.group==='DIVISAS').map(x=>({s:x.symbol,d:x.name}))},
+    {title:'ENERGÍA',symbols:instruments.filter(x=>x.group==='ENERGÍA').map(x=>({s:x.symbol,d:x.name}))},
+    {title:'METALES',symbols:instruments.filter(x=>x.group==='MATERIAS PRIMAS').map(x=>({s:x.symbol,d:x.name}))},
+    {title:'RIESGO',symbols:instruments.filter(x=>x.group==='RIESGO').map(x=>({s:x.symbol,d:x.name}))},
+    {title:'BOLSAS',symbols:instruments.filter(x=>x.group==='BOLSAS').map(x=>({s:x.symbol,d:x.name}))}
+  ];
+  tvScript(document.getElementById('marketOverview'),'https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js',{
+    colorTheme:'dark', dateRange:'12M', showChart:true, locale:'es', isTransparent:true, showSymbolLogo:false,
+    showFloatingTooltip:false, width:'100%', height:'100%', tabs
+  });
+}
+
+function loadMain(inst){
+  document.getElementById('chartTitle').textContent=inst.name;
+  document.querySelectorAll('.qbtn').forEach(b=>b.classList.toggle('active',b.dataset.symbol===inst.symbol));
+  tvScript(document.getElementById('mainChart'),'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',{
+    autosize:true, symbol:inst.symbol, interval:'D', timezone:'Europe/Madrid', theme:'dark', backgroundColor:'rgba(8,11,15,1)',
+    gridColor:'rgba(45,55,66,.35)', style:'1', withdateranges:true, hide_side_toolbar:true, allow_symbol_change:true,
+    save_image:false, calendar:false, locale:'es', support_host:'https://www.tradingview.com',
+    watchlist:instruments.map(x=>x.symbol)
+  });
+}
+
+function buildQuickbar(){
+  const qb=document.getElementById('quickbar');
+  instruments.forEach(inst=>{
+    const b=document.createElement('button'); b.className='qbtn'; b.textContent=inst.name; b.dataset.symbol=inst.symbol;
+    b.addEventListener('click',()=>loadMain(inst)); qb.appendChild(b);
+  });
+}
+
+function loadMini(target,symbol){
+  tvScript(document.getElementById(target),'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',{
+    autosize:true, symbol, interval:'D', timezone:'Europe/Madrid', theme:'dark', backgroundColor:'rgba(8,11,15,1)',
+    gridColor:'rgba(45,55,66,.3)', style:'2', withdateranges:true, hide_side_toolbar:true, allow_symbol_change:true,
+    save_image:false, calendar:false, locale:'es', support_host:'https://www.tradingview.com'
+  });
+}
+
+let relationsLoaded=false, calendarLoaded=false;
+function loadRelations(){
+  if(relationsLoaded) return; relationsLoaded=true;
+  loadMini('ratesChart','TVC:US10Y');
+  loadMini('fxChart','TVC:DXY');
+  loadMini('energyChart','TVC:UKOIL');
+  loadMini('metalsChart','COMEX:GC1!');
+  loadMini('riskChart','CBOE:VIX');
+  loadMini('equitiesChart','SP:SPX');
+}
+function loadCalendar(){
+  if(calendarLoaded) return; calendarLoaded=true;
+  tvScript(document.getElementById('calendarWidget'),'https://s3.tradingview.com/external-embedding/embed-widget-events.js',{
+    colorTheme:'dark', isTransparent:true, width:'100%', height:'100%', locale:'es', importanceFilter:'0,1', countryFilter:'us,eu,es,de'
+  });
+}
+
+function setView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  if(name==='relaciones') loadRelations();
+  if(name==='calendario') loadCalendar();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+
+function updateClock(){
+  const d=new Date();
+  document.getElementById('clock').textContent = new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(d) + ' · Madrid';
+}
+setInterval(updateClock,1000); updateClock();
+function onlineState(){document.body.classList.toggle('offline',!navigator.onLine)}
+window.addEventListener('online',onlineState); window.addEventListener('offline',onlineState); onlineState();
+
+buildQuickbar(); loadTicker(); loadOverview(); loadMain(instruments[1]);
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
