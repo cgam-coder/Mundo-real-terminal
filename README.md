@@ -1,62 +1,50 @@
-# Mundo Real // Macro Terminal
+# Mundo Real // Macro Terminal — v1.1
 
-PWA móvil, gratuita y sin claves API, basada en widgets oficiales de TradingView. Está diseñada para seguir los 18 indicadores del panel “Mundo Real” y ver sus relaciones en gráficos tipo terminal.
+PWA móvil gratuita para seguir los 18 indicadores del panel “Mundo Real”. Esta versión corrige el problema **“This symbol is only available on TradingView”**.
 
-## Qué incluye
+## Qué cambia en v1.1
 
-- Ticker superior con los activos principales.
-- Watchlist agrupada: tipos, divisas, energía, metales, riesgo y bolsas.
-- Gráfico avanzado con los 18 símbolos en la watchlist.
-- Sección “Relaciones” con seis paneles macro.
-- Calendario económico.
-- PWA instalable en Android.
-- Sin backend, sin suscripción y sin claves API.
+TradingView no permite incrustar en widgets todos los símbolos que sí pueden verse dentro de tradingview.com. Por eso esta versión evita los feeds restringidos y usa tres estrategias:
 
-## Fuentes / frecuencia
+1. **Símbolos TVC/spot embebibles** cuando existe el mismo indicador.
+2. **Proxy CFD muy correlacionado** cuando el futuro exacto de la bolsa está restringido en widgets.
+3. **Gráfico oficial FRED** para el spread 10Y–2Y y el breakeven 10Y, que son series diarias.
 
-Los gráficos usan widgets oficiales de TradingView. La frecuencia del dato depende del instrumento y de las licencias de cada mercado. Los símbolos `TVC:` son series calculadas por TradingView; TradingView indica que las muestra gratuitamente en tiempo real. Las series FRED son diarias. Los futuros e índices de bolsas concretas pueden mostrarse retrasados según el mercado.
+Esto mantiene la app a **0 €**, a cambio de aceptar retrasos y pequeñas diferencias entre un proxy y el contrato exacto que ves en Investing.
 
-Símbolos principales:
+## Mapeo de datos
 
-- TVC:US02Y — EE.UU. 2 años
-- TVC:US10Y — EE.UU. 10 años
-- FRED:T10Y2Y — spread 10Y-2Y
-- FRED:T10YIE — breakeven 10 años
-- TVC:DE02Y — Alemania 2 años
-- TVC:DXY — índice dólar
-- OANDA:EURUSD — EUR/USD
-- TVC:UKOIL — Brent
-- ICEEUR:TFN1! — Dutch TTF Natural Gas
-- COMEX:HG1! — cobre
-- COMEX:GC1! — oro
-- COMEX:SI1! — plata
-- CBOE:VIX — VIX
-- COINBASE:BTCUSD — BTC/USD
-- SP:SPX — S&P 500
-- NASDAQ:IXIC — Nasdaq Composite
-- TVC:SX5E — Euro Stoxx 50
-- BME:IBC — IBEX 35
+- EE.UU. 2A → `TVC:US02Y`
+- EE.UU. 10A → `TVC:US10Y`
+- 10Y–2Y → FRED `T10Y2Y` (gráfico oficial, diario)
+- Breakeven 10Y → FRED `T10YIE` (gráfico oficial, diario)
+- Alemania 2A → `TVC:DE02Y`
+- DXY → `TVC:DXY`
+- EUR/USD → `OANDA:EURUSD`
+- Brent → `TVC:UKOIL` (proxy CFD)
+- TTF → `CMCMARKETS:DUTCHNATGAS1!` (proxy TTF)
+- Cobre → `CAPITALCOM:XCUUSD` (proxy spot/CFD)
+- Oro → `TVC:GOLD` (proxy spot/CFD)
+- Plata → `TVC:SILVER` (proxy spot/CFD)
+- VIX → `TVC:VIX`
+- BTC/USD → `COINBASE:BTCUSD`
+- S&P 500 → `TVC:SPX`
+- Nasdaq Composite → `TVC:IXIC`
+- Euro Stoxx 50 → `TVC:SX5E`
+- IBEX 35 → `TVC:IBEX35`
 
-## Cómo ponerla en el móvil gratis
+## Cómo actualizar tu GitHub Pages
 
-### Opción recomendada: GitHub Pages
-1. Crea una cuenta gratuita en GitHub.
-2. Crea un repositorio nuevo, por ejemplo `mundo-real-terminal`.
-3. Sube todos los archivos de esta carpeta a la raíz del repositorio.
-4. En el repositorio: **Settings → Pages**.
-5. En **Build and deployment**, elige **Deploy from a branch**.
-6. Selecciona `main` y `/ (root)` y guarda.
-7. GitHub te dará una URL HTTPS.
-8. Ábrela en Chrome de Android → menú ⋮ → **Instalar aplicación** o **Añadir a pantalla de inicio**.
+Sustituye en la raíz del repositorio estos archivos por los de esta versión:
 
-La app seguirá siendo gratuita. TradingView puede cambiar en el futuro la disponibilidad o latencia de determinados mercados; si un símbolo deja de funcionar, basta con cambiar su código en `index.html`.
+- `index.html`
+- `sw.js`
+- `README.md`
 
-## Uso
+Puedes dejar `manifest.webmanifest`, `icon-192.png` e `icon-512.png` como están, aunque el ZIP incluye todo el proyecto por comodidad.
 
-- Toca un indicador en la barra horizontal para cargarlo en el gráfico principal.
-- El gráfico avanzado también incluye la watchlist completa.
-- Para comparar series, usa la función **Compare or Add Symbol** del gráfico de TradingView y cambia la escala a porcentaje cuando mezcles unidades muy distintas.
+Después de hacer commit, GitHub Pages se vuelve a desplegar automáticamente. La v1.1 cambia la versión de la caché del Service Worker para que el móvil no se quede atrapado en la versión anterior.
 
-## Nota
+## Limitación importante
 
-No es una fuente oficial de ejecución ni una terminal profesional de mercado. Está pensada como panel personal de seguimiento macro. No debe asumirse que todos los instrumentos tienen la misma frecuencia de actualización.
+Un proxy sirve muy bien para leer dirección, tendencia y relaciones macro, pero no debe esperarse que su cotización coincida al céntimo con el futuro exacto de COMEX/ICE o con el derivado mostrado por Investing.
